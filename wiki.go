@@ -15,6 +15,7 @@ import (
 type Page struct {
 	Title string
 	Body  []byte
+	DisplayBody template.HTML
 }
 
 func (p *Page) save() error {
@@ -31,12 +32,21 @@ func loadPage(title string) (*Page, error) {
 	return &Page{Title: title, Body: body}, nil
 }
 
+var linkRegExp = regexp.MustCompile("\\[([a-zA-Z0-9]+)\\]")
+
 func viewHandler(w http.ResponseWriter, r *http.Request, title string) {
 	p, err := loadPage(title)
 	if err != nil {
 		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
 		return
 	}
+	escapedBody := []byte(template.HTMLEscapeString(string(p.Body)))
+
+	p.DisplayBody = template.HTML(linkRegExp.ReplaceAllFunc(escapedBody, func(str []byte) []byte {
+		matched := linkRegExp.FindStringSubmatch(string(str))
+		out := []byte("<a href=\"/view/"+matched[1]+"\">"+matched[1]+"</a>")
+		return out
+	}))
 	renderTemplate(w, "view", p)
 }
 
