@@ -13,3 +13,6 @@
 
 # MacOS stuff
 .DS_Store
+
+# Docker build tags
+.built-docker-image
