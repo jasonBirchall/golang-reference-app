@@ -16,3 +16,6 @@
 
 # Docker build tags
 .built-docker-image
+
+# Built binary
+wiki
