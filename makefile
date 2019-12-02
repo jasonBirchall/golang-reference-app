@@ -1,7 +1,7 @@
 IMAGE := json0/go-reference-app
 TAG := 1.0
 
-build: .built-docker-image
+docker-build: .built-docker-image
 
 .built-docker-image: Dockerfile makefile
 	docker build -t $(IMAGE) .
@@ -13,3 +13,6 @@ tag:
 push: .built-docker-image
 	docker tag $(IMAGE) $(IMAGE):$(TAG)
 	docker push $(IMAGE):$(TAG)
+
+go-build:
+	go build wiki.go
