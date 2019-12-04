@@ -18,6 +18,8 @@ RUN go build -o main .
 # Expose port 8082 to the outside world
 EXPOSE 8082
 
+RUN chown -R gowiki:gowiki /app
+
 # Change user
 USER 1000
 
