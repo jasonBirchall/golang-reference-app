@@ -8,6 +8,4 @@ build:
 deploy:
   kubectl:
     manifests:
-    - deploy/deployment.yaml
-    - deploy/ingress.yaml
-    - deploy/service.yaml
+    - deploy/*
