@@ -1,0 +1,13 @@
+apiVersion: skaffold/v1
+kind: Config
+metadata:
+  name: golang-reference-app
+build:
+  artifacts:
+  - image: json0/go-reference-app
+deploy:
+  kubectl:
+    manifests:
+    - deploy/deployment.yaml
+    - deploy/ingress.yaml
+    - deploy/service.yaml
