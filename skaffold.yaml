@@ -3,9 +3,12 @@ kind: Config
 metadata:
   name: golang-reference-app
 build:
+  tagPolicy:
+    gitCommit: {}
   artifacts:
   - image: json0/go-reference-app
 deploy:
+  statusCheckDeadlineSeconds: 300 # Checks the deployment health using the kubectl rollout status
   kubectl:
     manifests:
-    - deploy/*
+    - deploy/* # Deploys all manifest files in the deploy directory
