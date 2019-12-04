@@ -20,6 +20,12 @@ EXPOSE 8082
 
 RUN chown -R gowiki:gowiki /app
 
+# For structure-tests in skafold
+RUN curl -LO https://storage.googleapis.com/container-structure-test/v1.8.0/container-structure-test-linux-amd64 && \
+      mv container-structure-test-linux-amd64 container-structure-test && \
+      chmod +x container-structure-test && \
+      mv container-structure-test /usr/local/bin/
+
 # Change user
 USER 1000
 
