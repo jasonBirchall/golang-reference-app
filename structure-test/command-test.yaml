@@ -1,0 +1,8 @@
+commandTests:
+  - name: "say hello world"
+    command: "bash"
+    args:
+      - -c
+      - |
+         echo hello &&
+         echo world

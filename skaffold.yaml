@@ -12,3 +12,10 @@ deploy:
   kubectl:
     manifests:
     - deploy/* # Deploys all manifest files in the deploy directory
+
+profiles:
+  - name: quickcheck
+    test:
+      - image: json0/go-reference-app
+        structureTests:
+          - './structure-test/command-test.yaml'
