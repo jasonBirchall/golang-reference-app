@@ -7,6 +7,8 @@ docker-build: .built-docker-image
 	docker build -t $(IMAGE) .
 	touch .built-docker-image
 
+shell:
+	docker run --rm -it $(IMAGE):$(TAG) bash
 tag:
 	docker tag $(IMAGE) $(IMAGE):$(TAG)
 
