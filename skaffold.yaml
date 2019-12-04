@@ -11,7 +11,7 @@ deploy:
   statusCheckDeadlineSeconds: 300 # Checks the deployment health using the kubectl rollout status
   kubectl:
     manifests:
-    - deploy/* # Deploys all manifest files in the deploy directory
+    - deploy/*.yaml # Deploys all manifest files in the deploy directory
 
 profiles:
   - name: quickcheck
