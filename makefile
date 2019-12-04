@@ -1,5 +1,5 @@
 IMAGE := json0/go-reference-app
-TAG := 1.0
+TAG := 1.1
 
 docker-build: .built-docker-image
 
