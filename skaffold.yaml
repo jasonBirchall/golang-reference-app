@@ -18,4 +18,4 @@ profiles:
     test:
       - image: json0/go-reference-app
         structureTests:
-          - './structure-test/command-test.yaml'
+          - './structure-test/container-test.yaml'

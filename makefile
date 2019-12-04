@@ -1,5 +1,5 @@
 IMAGE := json0/go-reference-app
-TAG := 1.1
+TAG := 1.2
 
 docker-build: .built-docker-image
 
@@ -9,6 +9,7 @@ docker-build: .built-docker-image
 
 shell:
 	docker run --rm -it $(IMAGE):$(TAG) bash
+
 tag:
 	docker tag $(IMAGE) $(IMAGE):$(TAG)
 
