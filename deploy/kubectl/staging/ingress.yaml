@@ -6,9 +6,9 @@ metadata:
 spec:
   tls:
   - hosts:
-    - skaffold-dev.apps.skaffold.cloud-platform.service.justice.gov.uk
+    - skaffold-staging.apps.live-1.cloud-platform.service.justice.gov.uk
   rules:
-  - host: skaffold-dev.apps.skaffold.cloud-platform.service.justice.gov.uk
+  - host: skaffold-staging.apps.live-1.cloud-platform.service.justice.gov.uk
     http:
       paths:
       - path: /
