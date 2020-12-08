@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
       - name: golang-wiki
-        image: json0/go-reference-app
+        image: json0/go-reference-app:honey
         ports:
         - containerPort: 8082
