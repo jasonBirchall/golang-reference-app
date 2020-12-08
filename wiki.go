@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 
 	beeline "github.com/honeycombio/beeline-go"
@@ -100,7 +101,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	beeline.Init(beeline.Config{
 		// Get this via https://ui.honeycomb.io/account after signing up for Honeycomb
-		WriteKey: "<API_KEY>",
+		WriteKey: os.Getenv("HONEYCOMB_API"),
 		// The name of your app is a good choice to start with
 		Dataset: "jasonSuperWiki",
 	})
