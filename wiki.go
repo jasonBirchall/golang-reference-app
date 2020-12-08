@@ -100,7 +100,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	beeline.Init(beeline.Config{
 		// Get this via https://ui.honeycomb.io/account after signing up for Honeycomb
-		WriteKey: "006b92621c34bce75b25d79ab01bed42",
+		WriteKey: "<API_KEY>",
 		// The name of your app is a good choice to start with
 		Dataset: "jasonSuperWiki",
 	})
