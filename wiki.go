@@ -10,11 +10,13 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+
+	beeline "github.com/honeycombio/beeline-go"
 )
 
 type Page struct {
-	Title string
-	Body  []byte
+	Title       string
+	Body        []byte
 	DisplayBody template.HTML
 }
 
@@ -44,7 +46,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request, title string) {
 
 	p.DisplayBody = template.HTML(linkRegExp.ReplaceAllFunc(escapedBody, func(str []byte) []byte {
 		matched := linkRegExp.FindStringSubmatch(string(str))
-		out := []byte("<a href=\"/view/"+matched[1]+"\">"+matched[1]+"</a>")
+		out := []byte("<a href=\"/view/" + matched[1] + "\">" + matched[1] + "</a>")
 		return out
 	}))
 	renderTemplate(w, "view", p)
@@ -96,6 +98,14 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	beeline.Init(beeline.Config{
+		// Get this via https://ui.honeycomb.io/account after signing up for Honeycomb
+		WriteKey: "006b92621c34bce75b25d79ab01bed42",
+		// The name of your app is a good choice to start with
+		Dataset: "jasonSuperWiki",
+	})
+	defer beeline.Close()
+
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/view/", makeHandler(viewHandler))
 	http.HandleFunc("/edit/", makeHandler(editHandler))
