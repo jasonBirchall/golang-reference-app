@@ -19,10 +19,10 @@ RUN go mod download
 COPY . .
 
 # Build the Go app
-RUN go build -o main .
+RUN go build -o wiki ./wiki.go
 
 # Expose port 8082 to the outside world
-EXPOSE 8082
+EXPOSE 8080
 
 RUN chown -R gowiki:gowiki /app
 

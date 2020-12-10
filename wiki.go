@@ -1,116 +1,70 @@
-// Copyright 2010 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package main
 
 import (
-	"html/template"
-	"io/ioutil"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"regexp"
 
-	beeline "github.com/honeycombio/beeline-go"
+	"github.com/honeycombio/beeline-go"
+	"github.com/honeycombio/beeline-go/wrappers/hnyhttprouter"
+	"github.com/honeycombio/beeline-go/wrappers/hnynethttp"
+	"github.com/julienschmidt/httprouter"
 )
 
-type Page struct {
-	Title       string
-	Body        []byte
-	DisplayBody template.HTML
-}
-
-func (p *Page) save() error {
-	filename := "data/" + p.Title + ".txt"
-	return ioutil.WriteFile(filename, p.Body, 0600)
-}
-
-func loadPage(title string) (*Page, error) {
-	filename := "data/" + title + ".txt"
-	body, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	return &Page{Title: title, Body: body}, nil
-}
-
-var linkRegExp = regexp.MustCompile("\\[([a-zA-Z0-9]+)\\]")
-
-func viewHandler(w http.ResponseWriter, r *http.Request, title string) {
-	p, err := loadPage(title)
-	if err != nil {
-		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
-		return
-	}
-	escapedBody := []byte(template.HTMLEscapeString(string(p.Body)))
-
-	p.DisplayBody = template.HTML(linkRegExp.ReplaceAllFunc(escapedBody, func(str []byte) []byte {
-		matched := linkRegExp.FindStringSubmatch(string(str))
-		out := []byte("<a href=\"/view/" + matched[1] + "\">" + matched[1] + "</a>")
-		return out
-	}))
-	renderTemplate(w, "view", p)
-}
-
-func editHandler(w http.ResponseWriter, r *http.Request, title string) {
-	p, err := loadPage(title)
-	if err != nil {
-		p = &Page{Title: title}
-	}
-	renderTemplate(w, "edit", p)
-}
-
-func saveHandler(w http.ResponseWriter, r *http.Request, title string) {
-	body := r.FormValue("body")
-	p := &Page{Title: title, Body: []byte(body)}
-	err := p.save()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	http.Redirect(w, r, "/view/"+title, http.StatusFound)
-}
-
-var templates = template.Must(template.ParseFiles("tmpl/edit.html", "tmpl/view.html"))
-
-func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
-	err := templates.ExecuteTemplate(w, tmpl+".html", p)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
-
-func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		m := validPath.FindStringSubmatch(r.URL.Path)
-		if m == nil {
-			http.NotFound(w, r)
-			return
-		}
-		fn(w, r, m[2])
-	}
-}
-
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/view/FrontPage", http.StatusFound)
-}
-
 func main() {
+	// Initialize beeline. The only required field is WriteKey.
 	beeline.Init(beeline.Config{
-		// Get this via https://ui.honeycomb.io/account after signing up for Honeycomb
 		WriteKey: os.Getenv("HONEYCOMB_API"),
-		// The name of your app is a good choice to start with
-		Dataset: "jasonSuperWiki",
+		Dataset:  "jasonSuperWiki",
+		// for demonstration, send the event to STDOUT intead of Honeycomb.
+		// Remove the STDOUT setting when filling in a real write key.
+		// NOTE: This should *only* be set to true in development environments.
+		// Setting to true is Production environments can cause problems.
+		STDOUT: true,
 	})
+	// ensure everything gets sent off before we exit
 	defer beeline.Close()
 
-	http.HandleFunc("/", rootHandler)
-	http.HandleFunc("/view/", makeHandler(viewHandler))
-	http.HandleFunc("/edit/", makeHandler(editHandler))
-	http.HandleFunc("/save/", makeHandler(saveHandler))
+	router := httprouter.New()
 
-	log.Fatal(http.ListenAndServe(":8082", nil))
+	// call regular httprouter Handles with wrappers to extract parameters
+	router.GET("/hello/:name", hnyhttprouter.Middleware(Hello))
+	// though the wrapper also works on routes that don't have parameters
+	router.GET("/", hnyhttprouter.Middleware(Index))
+
+	// wrap the main router to set everything up for instrumenting
+	log.Fatal(http.ListenAndServe(":8080", hnynethttp.WrapHandler(router)))
 }
+
+func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	fmt.Fprint(w, "Welcome!\n")
+}
+
+func Hello(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	beeline.AddField(r.Context(), "inHello", true)
+	fmt.Fprintf(w, "hello, %s!\n", ps.ByName("name"))
+}
+
+// Produces an event like this:
+// {
+//   "data": {
+//     "app.inHello": true,
+//     "duration_ms": 0.63284,
+//     "handler.name": "main.Hello",
+//     "handler.vars.name": "foo",
+//     "meta.localhostname": "cobbler",
+//     "meta.type": "http request",
+//     "request.content_length": 0,
+//     "request.header.user_agent": "curl/7.54.0",
+//     "request.host": "localhost:8080",
+//     "request.method": "GET",
+//     "request.path": "/hello/foo",
+//     "request.proto": "HTTP/1.1",
+//     "request.remote_addr": "[::1]:52539",
+//     "response.status_code": 200,
+//     "trace.span_id": "9eed613e-40f4-4bc8-b6b5-866cae2c51cf",
+//     "trace.trace_id": "91be396a-41a1-44aa-9f0a-25bf779448cc"
+//   },
+//   "time": "2018-04-06T22:55:05.040951984-07:00"
+// }
