@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: golang-wiki
-        image: json0/go-reference-app:honey
+        image: json0/go-reference-app:honey2.3
         env:
           - name: HONEYCOMB_API
             valueFrom:
@@ -23,4 +23,4 @@ spec:
                 name: honeycomb
                 key: api
         ports:
-        - containerPort: 8082
+        - containerPort: 8080

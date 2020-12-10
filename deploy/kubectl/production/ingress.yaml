@@ -14,4 +14,4 @@ spec:
       - path: /
         backend:
           serviceName: golang-wiki
-          servicePort: 8082
+          servicePort: 8080

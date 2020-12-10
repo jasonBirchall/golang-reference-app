@@ -1,5 +1,5 @@
 IMAGE := json0/go-reference-app
-TAG := honey
+TAG := honey2.3
 
 docker-build: .built-docker-image
 
